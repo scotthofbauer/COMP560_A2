@@ -27,14 +27,14 @@ public class Model {
                 action = state.chooseAction();
 
                 State tempState = action.chooseResultState();
-//                if(tempState == null) {
-//
-//                    while (tempState == null) {
-//                        action = state.chooseAction();
-//                        tempState = action.chooseResultState();
-//
-//                    }
-//                }
+                if(tempState == null) {
+
+                    while (tempState == null) {
+                        action = state.chooseAction();
+                        tempState = action.chooseResultState();
+
+                    }
+                }
                 action.updateCount();
                 action.updateResultActionState();
                 state = action.chooseResultState();
@@ -62,42 +62,48 @@ public class Model {
 
     public void learnModelFree(){
         int count = 1;
-        while(count <5000) {
-            System.out.println("ITERATION: " + count);
-            State state = this.getState("Fairway");
-            Action action = null;
+        while(count <100) {
+            System.out.println("Episode: " + count);
             int score = 1;
-//            updateAllUtilities();
-//            printUtilities();
-
-            LinkedList<Move> episode = new LinkedList<>();
+            //Initialize S, Q(S,A) is already initialized to zero by creating the actions.
+            State state = this.getState("Fairway");
+            //choose A(S) using eplison greedy from Q
+            Action action = state.chooseActionGreedyQ();
             while (!state.getName().equals("In")) {
-                String firstStateName = state.getName();
-                action = state.chooseAction();
-                action.updateCount();
-                state = action.chooseResultState();
-                episode.add(new Move(getState(firstStateName), action, state));
+                //take action A, get reward, S'
+                State newState = action.chooseRandomResultState();
+                System.out.println(state.getName() + "/" + action.getName() + "/" + newState.getName() + " " + action.getFunctionValue());
+                System.out.println("");
+                if(newState.getName().equals("In")){break;}
+                //choose A'(S') using epsilon greedy from Q
+                Action newAction = newState.chooseActionGreedyQ();
+                //Q(s,a) -> Q(s,a) + alpha[Reward + gamma*Q(s',a') - Q(s,a)
+                action.calculateFunctionValue(newAction);
+                //A -> a'
+                action = newAction;
+                state = newState;
                 score++;
             }
-            printEpisode(episode);
-            addScoresToStates(episode, score);
-
-            System.out.println("Hopefully we make it in the hole! with score: " + (score-1));
+            System.out.println("Hopefully we make it in the hole! with score: " + (score));
             System.out.println();
             count++;
         }
-        printPolicies();
+        setModelFreePolicies();
+//        printFunctionValues();
     }
 
-    private void addScoresToStates(LinkedList<Move> episode, int score){
-        for(int i=  0; i<episode.size(); i++){
-            episode.get(i).getAction().addScore(score);
+    private void setModelFreePolicies(){
+        for(int i=  0; i<states.size(); i++){
+            states.get(i).setPolicyByFunctionValue();
+            System.out.println(states.get(i).getName() + ", Policy: " + states.get(i).getPolicy() + " " + states.get(i).getUtility());
         }
     }
 
-    private void printEpisode(LinkedList<Move> episode){
-        for(int i = 0; i<episode.size(); i++){
-            System.out.println(episode.get(i).toString());
+    private void printFunctionValues(){
+        for(int i = 0; i<states.size(); i++){
+            System.out.println("State: " + states.get(i).getName());
+            System.out.println("////////");
+            states.get(i).printFunctionValues();
         }
 
     }
@@ -159,13 +165,13 @@ public class Model {
     }
 
 
-    private void printPolicies(){
-        System.out.println("//////////////");
-        for(int i = 0; i<states.size(); i++){
-            states.get(i).setPolicyByScore();
-            System.out.println("State: " + states.get(i).getName() + ", Utility: " + ", Policy: " + states.get(i).getPolicy());
-        }
-    }
+//    private void printPolicies(){
+//        System.out.println("//////////////");
+//        for(int i = 0; i<states.size(); i++){
+//            states.get(i).setPolicyByScore();
+//            System.out.println("State: " + states.get(i).getName() + ", Utility: " + ", Policy: " + states.get(i).getPolicy());
+//        }
+//    }
 
 
 

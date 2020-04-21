@@ -8,7 +8,7 @@ import java.util.Collections;
 
 
 public class State {
-//    private String actions[];
+    public static final double EXPLORATION_VALUE = 0.2;
     private String name;
     private double prob = 0.0;
     private LinkedList<State> resultStates = new LinkedList<State>();
@@ -123,9 +123,28 @@ public class State {
     }
 
     public Action chooseAction(){
+
         Random rand = new Random();
         int x = rand.nextInt(this.actions.size());
         return this.actions.get(x);
+    }
+
+    public Action chooseActionGreedyQ(){
+        Random rand = new Random();
+        double p = Math.random();
+        if(p<EXPLORATION_VALUE){
+            int x = rand.nextInt(this.actions.size());
+            return this.actions.get(x);
+        }else{
+            double min = Double.MAX_VALUE;
+            for(int i = 0; i<this.actions.size(); i++){
+                if(this.actions.get(i).getFunctionValue() < min){
+                    return this.actions.get(i);
+                }
+            }
+        }
+        System.out.println("Return null on chooseActionGreedyQ");
+        return null;
     }
 
 
@@ -152,15 +171,26 @@ public class State {
         }
     }
 
-    public void setPolicyByScore(){
-        double min = Double.MAX_VALUE;
+    public void setPolicyByFunctionValue(){
+        double min = Double.MIN_VALUE;
+        int index = 0;
         for(int i = 0; i<this.actions.size(); i++){
-            if(this.actions.get(i).getAverage() < min){
-                min = this.actions.get(i).getAverage();
-                this.setPolicy(this.actions.get(i).getName());
+//            System.out.println("Action: " + this.actions.get(i).getName() + ", FunctionValue: " + this.actions.get(i).getFunctionValue());
+            if(this.actions.get(i).getFunctionValue() > min){
+                min = this.actions.get(i).getFunctionValue();
+                index = i;
             }
         }
+        if(!this.getName().equals("In")) {
+            this.setPolicy(this.actions.get(index).getName());
+            this.setUtility(this.actions.get(index).getFunctionValue());
+        }
+    }
 
+    public void printFunctionValues(){
+        for (int i = 0; i < this.actions.size(); i++) {
+            System.out.println("Action: " + this.actions.get(i).getName() + ", FunctionValue: " + this.actions.get(i).getFunctionValue());
+        }
     }
 
 

@@ -60,19 +60,21 @@ public class Main {
         }
 
 
-        for(int i = 0; i<states.size(); i++){
-            System.out.println(states.get(i).getName());
-            System.out.println("///////////");
-            for(int j = 0; j<states.get(i).getActions().size(); j++){
-                System.out.println(states.get(i).getActions().get(j).getName());
-                System.out.println("Action: " + states.get(i).getActions().get(j).getName() + " has these value pairs:");
-                states.get(i).getActions().get(j).printPairs();
-            }
-            System.out.println("///////////");
-
-        }
+//        for(int i = 0; i<states.size(); i++){
+//            System.out.println(states.get(i).getName());
+//            System.out.println("///////////");
+//            for(int j = 0; j<states.get(i).getActions().size(); j++){
+//                System.out.println(states.get(i).getActions().get(j).getName());
+//                System.out.println("Action: " + states.get(i).getActions().get(j).getName() + " has these value pairs:");
+//                states.get(i).getActions().get(j).printPairs();
+//            }
+//            System.out.println("///////////");
+//
+//        }
 
         Model model = new Model(states);
+        model.learnModel();
+        System.out.println("////////////////////////");
         model.learnModelFree();
 
     }
